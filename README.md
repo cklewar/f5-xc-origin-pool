@@ -13,7 +13,7 @@ This repository consists of Terraform templates to create a F5XC Origin Pool obj
 
 ## Origin pool module usage example
 
-````hcl
+```hcl
 variable "project_prefix" {
   type        = string
   description = "prefix string put in front of string"
