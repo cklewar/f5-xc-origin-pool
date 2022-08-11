@@ -38,5 +38,20 @@ variable "f5xc_tenant" {
   type = string
 }
 
-
+module "origin_pool_private_ip_site" {
+  source                                             = "./modules/f5xc/origin-pool"
+  f5xc_tenant                                        = var.f5xc_tenant
+  f5xc_api_url                                       = var.f5xc_api_url
+  f5xc_api_p12_file                                  = var.f5xc_api_p12_file
+  f5xc_namespace                                     = "system"
+  f5xc_origin_pool_name                              = format("%s-pool-private-ip-site-%s", var.project_prefix, var.project_suffix)
+  f5xc_origin_pool_port                              = "443"
+  f5xc_origin_pool_private_ip                        = "10.15.250.100"
+  f5xc_origin_pool_private_ip_site_locator_site_name = "refMySite"
+  f5xc_origin_pool_private_ip_inside_network         = false
+  f5xc_origin_pool_private_ip_outside_network        = true
+  f5xc_origin_pool_labels                            = {
+    Label1 = "value1"
+  }
+}
 ```
