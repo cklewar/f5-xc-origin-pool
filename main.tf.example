@@ -11,151 +11,166 @@ variable "project_suffix" {
 }
 
 variable "f5xc_api_p12_file" {
-  type = string
+  type    = string
 }
 
 variable "f5xc_api_url" {
-  type = string
+  type    = string
 }
 
 variable "f5xc_tenant" {
-  type = string
+  type    = string
 }
 
-module "aws_vpc_multi_node_single_nic_new_subnet" {
-  source                          = "./modules/f5xc/site/aws/vpc"
-  f5xc_api_p12_file               = var.f5xc_api_p12_file
-  f5xc_api_url                    = var.f5xc_api_url
-  f5xc_namespace                  = "system"
-  f5xc_tenant                     = var.f5xc_tenant
-  f5xc_aws_region                 = "us-east-2"
-  f5xc_aws_cred                   = "aws-01"
-  f5xc_aws_vpc_site_name          = format("%s-vpc-multi-node-single-nic-%s", var.project_prefix, var.project_suffix)
-  f5xc_aws_vpc_name_tag           = format("%s-vpc-multi-node-multi-nic-%s", var.project_prefix, var.project_suffix)
-  f5xc_aws_vpc_primary_ipv4       = "192.168.168.0/21"
-  f5xc_aws_vpc_total_worker_nodes = 2
-  f5xc_aws_ce_gw_type             = "single_nic"
-  f5xc_aws_vpc_az_nodes           = {
-    node0 = { f5xc_aws_vpc_local_subnet = "192.168.168.0/26", f5xc_aws_vpc_az_name = "us-east-2a" },
-    node1 = { f5xc_aws_vpc_local_subnet = "192.168.169.0/26", f5xc_aws_vpc_az_name = "us-east-2a" },
-    node2 = { f5xc_aws_vpc_local_subnet = "192.168.170.0/26", f5xc_aws_vpc_az_name = "us-east-2a" }
-  }
-
-  f5xc_aws_default_ce_os_version       = true
-  f5xc_aws_default_ce_sw_version       = true
-  f5xc_aws_vpc_no_worker_nodes         = false
-  f5xc_aws_vpc_use_http_https_port     = true
-  f5xc_aws_vpc_use_http_https_port_sli = true
-  public_ssh_key                       = "ssh-rsa xyz"
-  custom_tags                          = {
-    Owner = "c.klewar@f5.com"
+module "origin_pool_private_ip_site" {
+  source                                             = "./modules/f5xc/origin-pool"
+  f5xc_tenant                                        = var.f5xc_tenant
+  f5xc_api_url                                       = var.f5xc_api_url
+  f5xc_api_p12_file                                  = var.f5xc_api_p12_file
+  f5xc_namespace                                     = "system"
+  f5xc_origin_pool_name                              = format("%s-pool-private-ip-site-%s", var.project_prefix, var.project_suffix)
+  f5xc_origin_pool_port                              = "443"
+  f5xc_origin_pool_private_ip                        = "10.15.250.100"
+  f5xc_origin_pool_private_ip_site_locator_site_name = "refMySite"
+  f5xc_origin_pool_private_ip_inside_network         = false
+  f5xc_origin_pool_private_ip_outside_network        = true
+  f5xc_origin_pool_labels                            = {
+    Label1 = "value1"
   }
 }
 
-module "aws_vpc_multi_node_multi_nic_new_subnet" {
-  source                          = "./modules/f5xc/site/aws/vpc"
-  f5xc_api_p12_file               = var.f5xc_api_p12_file
-  f5xc_api_url                    = var.f5xc_api_url
-  f5xc_namespace                  = "system"
-  f5xc_tenant                     = var.f5xc_tenant
-  f5xc_aws_region                 = "us-east-2"
-  f5xc_aws_cred                   = "aws-01"
-  f5xc_aws_vpc_site_name          = format("%s-vpc-multi-node-multi-nic-%s", var.project_prefix, var.project_suffix)
-  f5xc_aws_vpc_name_tag           = format("%s-vpc-multi-node-multi-nic-%s", var.project_prefix, var.project_suffix)
-  f5xc_aws_vpc_primary_ipv4       = "192.168.168.0/21"
-  f5xc_aws_vpc_total_worker_nodes = 2
-  f5xc_aws_ce_gw_type             = "multi_nic"
-  f5xc_aws_vpc_az_nodes           = {
-    node0 = {
-      f5xc_aws_vpc_workload_subnet = "192.168.168.0/26", f5xc_aws_vpc_inside_subnet = "192.168.168.64/26",
-      f5xc_aws_vpc_outside_subnet  = "192.168.168.128/26", f5xc_aws_vpc_az_name = "us-east-2a"
-    },
-    node1 = {
-      f5xc_aws_vpc_workload_subnet = "192.168.169.0/26", f5xc_aws_vpc_inside_subnet = "192.168.169.64/26",
-      f5xc_aws_vpc_outside_subnet  = "192.168.169.128/26", f5xc_aws_vpc_az_name = "us-east-2a"
-    },
-    node2 = {
-      f5xc_aws_vpc_workload_subnet = "192.168.170.0/26", f5xc_aws_vpc_inside_subnet = "192.168.170.64/26",
-      f5xc_aws_vpc_outside_subnet  = "192.168.170.128/26", f5xc_aws_vpc_az_name = "us-east-2a"
-    }
-  }
-  f5xc_aws_default_ce_os_version       = true
-  f5xc_aws_default_ce_sw_version       = true
-  f5xc_aws_vpc_no_worker_nodes         = false
-  f5xc_aws_vpc_use_http_https_port     = true
-  f5xc_aws_vpc_use_http_https_port_sli = true
-  public_ssh_key                       = "ssh-rsa xyz"
-  custom_tags                          = {
-    Owner = "c.klewar@f5.com"
+module "origin_pool_private_ip_virtual_site" {
+  source                                                     = "./modules/f5xc/origin-pool"
+  f5xc_tenant                                                = var.f5xc_tenant
+  f5xc_api_url                                               = var.f5xc_api_url
+  f5xc_api_p12_file                                          = var.f5xc_api_p12_file
+  f5xc_namespace                                             = "system"
+  f5xc_origin_pool_name                                      = format("%s-pool-private-ip-virtual-site-%s", var.project_prefix, var.project_suffix)
+  f5xc_origin_pool_port                                      = "443"
+  f5xc_origin_pool_private_ip                                = "10.15.250.100"
+  f5xc_origin_pool_private_ip_site_locator_virtual_site_name = "refMySite"
+  f5xc_origin_pool_private_ip_inside_network                 = false
+  f5xc_origin_pool_private_ip_outside_network                = true
+  f5xc_origin_pool_labels                                    = {
+    Label1 = "value1"
   }
 }
 
-module "aws_vpc_multi_node_single_nic_existing_subnets" {
-  source                          = "./modules/f5xc/site/aws/vpc"
-  f5xc_api_p12_file               = var.f5xc_api_p12_file
-  f5xc_api_url                    = var.f5xc_api_url
-  f5xc_namespace                  = "system"
-  f5xc_tenant                     = var.f5xc_tenant
-  f5xc_aws_region                 = "us-east-2"
-  f5xc_aws_cred                   = "cred-aws-01"
-  f5xc_aws_vpc_site_name          = format("%s-vpc-multi-node-single-nic-existing-subnet-%s", var.project_prefix, var.project_suffix)
-  f5xc_aws_vpc_name_tag           = format("%s-vpc-multi-node-single-nic-existing-subnet-%s", var.project_prefix, var.project_suffix)
-  f5xc_aws_vpc_total_worker_nodes = 2
-  f5xc_aws_ce_gw_type             = "single_nic"
-  f5xc_aws_vpc_existing_id        = "vpc_id_abc"
-  f5xc_aws_vpc_az_nodes           = {
-    node0 = { f5xc_aws_vpc_local_existing_subnet_id = "node0_subnet_id", f5xc_aws_vpc_az_name = "us-east-2a" },
-    node1 = { f5xc_aws_vpc_local_existing_subnet_id = "node1_subnet_id", f5xc_aws_vpc_az_name = "us-east-2a" },
-    node2 = { f5xc_aws_vpc_local_existing_subnet_id = "node2_subnet_id", f5xc_aws_vpc_az_name = "us-east-2a" }
+module "origin_pool_public_ip" {
+  source                     = "./modules/f5xc/origin-pool"
+  f5xc_tenant                = var.f5xc_tenant
+  f5xc_api_url               = var.f5xc_api_url
+  f5xc_api_p12_file          = var.f5xc_api_p12_file
+  f5xc_namespace             = "system"
+  f5xc_origin_pool_name      = format("%s-pool-public-ip-%s", var.project_prefix, var.project_suffix)
+  f5xc_origin_pool_port      = "443"
+  f5xc_origin_pool_public_ip = "8.8.8.8"
+  f5xc_origin_pool_labels    = {
+    Label1 = "value1"
   }
-  f5xc_aws_default_ce_os_version       = true
-  f5xc_aws_default_ce_sw_version       = true
-  f5xc_aws_vpc_no_worker_nodes         = false
-  f5xc_aws_vpc_use_http_https_port     = true
-  f5xc_aws_vpc_use_http_https_port_sli = true
-  public_ssh_key                       = "ssh-rsa xyz"
-  custom_tags                          = {
-    Owner = "c.klewar@f5.com"
+  f5xc_origin_pool_loadbalancer_algorithm = "LEAST_REQUEST"
+}
+
+module "origin_pool_public_name" {
+  source                            = "./modules/f5xc/origin-pool"
+  f5xc_tenant                       = var.f5xc_tenant
+  f5xc_api_url                      = var.f5xc_api_url
+  f5xc_api_p12_file                 = var.f5xc_api_p12_file
+  f5xc_namespace                    = "system"
+  f5xc_origin_pool_name             = format("%s-pool-public-name-%s", var.project_prefix, var.project_suffix)
+  f5xc_origin_pool_port             = "443"
+  f5xc_origin_pool_public_name      = "test.example.net"
+  f5xc_origin_pool_healthcheck_name = "myHealthCheck01"
+  f5xc_origin_pool_labels           = {
+    Label1 = "value1"
+  }
+  f5xc_origin_pool_loadbalancer_algorithm = "RING_HASH"
+}
+
+module "origin_pool_public_name_tls" {
+  source                            = "./modules/f5xc/origin-pool"
+  f5xc_tenant                       = var.f5xc_tenant
+  f5xc_api_url                      = var.f5xc_api_url
+  f5xc_api_p12_file                 = var.f5xc_api_p12_file
+  f5xc_namespace                    = "system"
+  f5xc_origin_pool_name             = format("%s-pool-public-name-%s", var.project_prefix, var.project_suffix)
+  f5xc_origin_pool_port             = "443"
+  f5xc_origin_pool_public_name      = "test.example.net"
+  f5xc_origin_pool_healthcheck_name = "myHealthCheck01"
+  f5xc_origin_pool_labels           = {
+    Label1 = "value1"
+  }
+  f5xc_origin_pool_loadbalancer_algorithm            = "RING_HASH"
+  f5xc_origin_pool_no_tls                            = false
+  f5xc_origin_pool_tls_disable_sni                   = false
+  f5xc_origin_pool_tls_sni                           = "someSNI"
+  f5xc_origin_pool_no_mtls                           = false
+  f5xc_origin_pool_mtls_certificate_url              = "some_url"
+  f5xc_origin_pool_mtls_certificate_description      = "my_mtls_config"
+  f5xc_origin_pool_mtls_custom_hash_algorithms       = ["custom_hash_algo"]
+  f5xc_origin_pool_mtls_private_key_clear_secret_url = "clearTextSecret"
+}
+
+module "origin_pool_vn_private_name" {
+  source                                                  = "./modules/f5xc/origin-pool"
+  f5xc_tenant                                             = var.f5xc_tenant
+  f5xc_api_url                                            = var.f5xc_api_url
+  f5xc_api_p12_file                                       = var.f5xc_api_p12_file
+  f5xc_namespace                                          = "system"
+  f5xc_origin_pool_name                                   = format("%s-pool-vn-private-name-%s", var.project_prefix, var.project_suffix)
+  f5xc_origin_pool_port                                   = "443"
+  f5xc_origin_pool_vn_private_dns_name                    = "some_dns_name"
+  f5xc_origin_pool_vn_private_name_site_locator_site_name = "some_site_refs"
+  f5xc_origin_pool_healthcheck_name                       = "myHealthCheck01"
+  f5xc_origin_pool_labels                                 = {
+    Label1 = "value1"
   }
 }
 
-module "aws_vpc_multi_node_multi_nic_existing_subnet" {
-  source                          = "./modules/f5xc/site/aws/vpc"
-  f5xc_api_p12_file               = var.f5xc_api_p12_file
-  f5xc_api_url                    = var.f5xc_api_url
-  f5xc_namespace                  = "system"
-  f5xc_tenant                     = var.f5xc_tenant
-  f5xc_aws_region                 = "us-east-2"
-  f5xc_aws_cred                   = "aws-01"
-  f5xc_aws_vpc_site_name          = format("%s-vpc-multi-node-multi-nic-existing-subnet-%s", var.project_prefix, var.project_suffix)
-  f5xc_aws_vpc_name_tag           = format("%s-vpc-multi-node-single-nic-existing-subnet-%s", var.project_prefix, var.project_suffix)
-  f5xc_aws_vpc_total_worker_nodes = 2
-  f5xc_aws_vpc_existing_id        = "vpc_id_abc"
-  f5xc_aws_ce_gw_type             = "multi_nic"
-  f5xc_aws_vpc_az_nodes           = {
-    node0 = {
-      f5xc_aws_vpc_workload_existing_subnet_id = "node0_subnet_workload_id",
-      f5xc_aws_vpc_inside_existing_subnet_id   = "node0_subnet_inside_id",
-      f5xc_aws_vpc_outside_existing_subnet_id  = "node0_subnet_outside_id", f5xc_aws_vpc_az_name = "us-east-2a"
-    },
-    node1 = {
-      f5xc_aws_vpc_workload_existing_subnet_id = "node1_subnet_workload_id",
-      f5xc_aws_vpc_inside_existing_subnet_id   = "node1_subnet_inside_id",
-      f5xc_aws_vpc_outside_existing_subnet_id  = "node1_subnet_outside_id", f5xc_aws_vpc_az_name = "us-east-2a"
-    },
-    node2 = {
-      f5xc_aws_vpc_workload_existing_subnet_id = "node2_subnet_workload_id",
-      f5xc_aws_vpc_inside_existing_subnet_id   = "node2_subnet_inside_id",
-      f5xc_aws_vpc_outside_existing_subnet_id  = "node2_subnet_outside_id", f5xc_aws_vpc_az_name = "us-east-2a"
-    }
+module "origin_pool_k8s_service_site" {
+  source                                              = "./modules/f5xc/origin-pool"
+  f5xc_tenant                                         = var.f5xc_tenant
+  f5xc_api_url                                        = var.f5xc_api_url
+  f5xc_api_p12_file                                   = var.f5xc_api_p12_file
+  f5xc_namespace                                      = "system"
+  f5xc_origin_pool_name                               = format("%s-pool-k8s-service-site-%s", var.project_prefix, var.project_suffix)
+  f5xc_origin_pool_port                               = "443"
+  f5xc_origin_pool_k8s_service_name                   = "some_k8s_service_name"
+  f5xc_origin_pool_k8s_service_site_locator_site_name = "some_site_refs"
+  f5xc_origin_pool_same_as_endpoint_port              = false
+  f5xc_origin_pool_health_check_port                  = "8443"
+  f5xc_origin_pool_labels                             = {
+    Label1 = "value1"
   }
-  f5xc_aws_default_ce_os_version       = true
-  f5xc_aws_default_ce_sw_version       = true
-  f5xc_aws_vpc_no_worker_nodes         = false
-  f5xc_aws_vpc_use_http_https_port     = true
-  f5xc_aws_vpc_use_http_https_port_sli = true
-  public_ssh_key                       = "ssh-rsa xyz"
-  custom_tags                          = {
-    Owner = "c.klewar@f5.com"
+}
+
+module "origin_pool_k8s_service_virtual_site" {
+  source                                                      = "./modules/f5xc/origin-pool"
+  f5xc_tenant                                                 = var.f5xc_tenant
+  f5xc_api_url                                                = var.f5xc_api_url
+  f5xc_api_p12_file                                           = var.f5xc_api_p12_file
+  f5xc_namespace                                              = "system"
+  f5xc_origin_pool_name                                       = format("%s-pool-k8s-service-virtual-site-%s", var.project_prefix, var.project_suffix)
+  f5xc_origin_pool_port                                       = "443"
+  f5xc_origin_pool_k8s_service_name                           = "some_k8s_service_name"
+  f5xc_origin_pool_k8s_service_site_locator_virtual_site_name = "some_virtual_site_refs"
+  f5xc_origin_pool_same_as_endpoint_port                      = false
+  f5xc_origin_pool_health_check_port                          = "8443"
+  f5xc_origin_pool_labels                                     = {
+    Label1 = "value1"
+  }
+}
+
+module "origin_pool_custom_endpoint_object" {
+  source                                       = "./modules/f5xc/origin-pool"
+  f5xc_tenant                                  = var.f5xc_tenant
+  f5xc_api_url                                 = var.f5xc_api_url
+  f5xc_api_p12_file                            = var.f5xc_api_p12_file
+  f5xc_namespace                               = "system"
+  f5xc_origin_pool_name                        = format("%s-pool-custom-endpoint-object-%s", var.project_prefix, var.project_suffix)
+  f5xc_origin_pool_port                        = "443"
+  f5xc_origin_pool_custom_endpoint_object_name = "some_endpoint_object_name"
+  f5xc_origin_pool_labels                      = {
+    Label1 = "value1"
   }
 }
