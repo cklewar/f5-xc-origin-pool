@@ -1,5 +1,5 @@
 name: F5XC Origin Pool module
-on: push
+on: workflow_dispatch
 jobs:
   f5-xc-origin-pool-module-validate:
     runs-on: ubuntu-latest
